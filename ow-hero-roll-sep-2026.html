@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overwatch Hero Randomizer</title>
+
+  <style>
+    :root {
+      --orange: #f99b1c;
+      --orange-dark: #d87500;
+      --blue: #142238;
+      --text: #f5f7fb;
+      --muted: #aebbd0;
+      --card: rgba(23, 39, 65, 0.92);
+      --border: rgba(255, 255, 255, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(249, 155, 28, 0.2), transparent 35%),
+        linear-gradient(135deg, #0b1220, #172945 55%, #101827);
+      display: flex;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .app {
+      width: min(900px, 100%);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 6vw, 4rem);
+      letter-spacing: -2px;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(12px);
+    }
+
+    .controls {
+      display: grid;
+      gap: 18px;
+    }
+
+    .role-options {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .role-option input {
+      display: none;
+    }
+
+    .role-option label {
+      display: block;
+      cursor: pointer;
+      text-align: center;
+      padding: 13px 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.04);
+      transition: 0.2s ease;
+      user-select: none;
+    }
+
+    .role-option label:hover {
+      border-color: var(--orange);
+      color: white;
+    }
+
+    .role-option input:checked + label {
+      color: #101827;
+      background: var(--orange);
+      border-color: var(--orange);
+      font-weight: bold;
+      box-shadow: 0 0 20px rgba(249, 155, 28, 0.28);
+    }
+
+    .randomize-button {
+      width: 100%;
+      border: 0;
+      border-radius: 14px;
+      padding: 16px 20px;
+      cursor: pointer;
+      color: #141414;
+      background: linear-gradient(135deg, #ffbd55, var(--orange-dark));
+      font-size: 1.1rem;
+      font-weight: 800;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .randomize-button:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+    }
+
+    .randomize-button:active {
+      transform: translateY(0);
+    }
+
+    .result {
+      min-height: 260px;
+      margin-top: 24px;
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border-radius: 18px;
+      background:
+        linear-gradient(rgba(15, 28, 48, 0.76), rgba(15, 28, 48, 0.76)),
+        radial-gradient(circle, rgba(249, 155, 28, 0.22), transparent 60%);
+      border: 1px solid rgba(249, 155, 28, 0.28);
+    }
+
+    .result-label {
+      color: var(--orange);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .hero-name {
+      margin: 10px 0 8px;
+      font-size: clamp(2.4rem, 9vw, 5.5rem);
+      line-height: 1;
+      letter-spacing: -2px;
+      text-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .hero-role {
+      color: var(--muted);
+      font-size: 1.15rem;
+    }
+
+    .count {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .history-section {
+      margin-top: 24px;
+    }
+
+    .history-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .history-heading h2 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .clear-button {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      cursor: pointer;
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .clear-button:hover {
+      color: white;
+      border-color: var(--orange);
+    }
+
+    .history {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .history-item {
+      padding: 7px 10px;
+      color: #dfe7f3;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.85rem;
+    }
+
+    .empty-history {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    footer {
+      margin-top: 18px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.78rem;
+    }
+
+    @media (max-width: 650px) {
+      .role-options {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .panel {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header>
+      <h1>Hero Randomizer</h1>
+      <p class="subtitle">Choose a role, then let fate pick your hero.</p>
+    </header>
+
+    <section class="panel">
+      <div class="controls">
+        <div class="role-options">
+          <div class="role-option">
+            <input type="radio" id="all" name="role" value="all" checked />
+            <label for="all">All Heroes</label>
+          </div>
+
+          <div class="role-option">
+            <input type="radio" id="tank" name="role" value="Tank" />
+            <label for="tank">Tank</label>
+          </div>
+
+          <div class="role-option">
+            <input type="radio" id="damage" name="role" value="Damage" />
+            <label for="damage">DPS</label>
+          </div>
+
+          <div class="role-option">
+            <input type="radio" id="support" name="role" value="Support" />
+            <label for="support">Support</label>
+          </div>
+        </div>
+
+        <button class="randomize-button" id="randomizeButton">
+          Randomize Hero
+        </button>
+      </div>
+
+      <div class="result" aria-live="polite">
+        <div class="result-label">Your Hero</div>
+        <div class="hero-name" id="heroName">—</div>
+        <div class="hero-role" id="heroRole">
+          Select a role and randomize
+        </div>
+        <div class="count" id="heroCount"></div>
+      </div>
+
+      <div class="history-section">
+        <div class="history-heading">
+          <h2>Recent Picks</h2>
+          <button class="clear-button" id="clearButton">Clear</button>
+        </div>
+
+        <div class="history" id="history">
+          <span class="empty-history">No heroes selected yet.</span>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      September 2026 hero roster snapshot · Picks do not repeat until the selected pool is exhausted.
+    </footer>
+  </main>
+
+  <script>
+    const heroes = [
+      // Tanks
+      { name: "D.Mon", role: "Tank" },
+      { name: "D.Va", role: "Tank" },
+      { name: "Domina", role: "Tank" },
+      { name: "Doomfist", role: "Tank" },
+      { name: "Hazard", role: "Tank" },
+      { name: "Junker Queen", role: "Tank" },
+      { name: "Mauga", role: "Tank" },
+      { name: "Orisa", role: "Tank" },
+      { name: "Ramattra", role: "Tank" },
+      { name: "Reinhardt", role: "Tank" },
+      { name: "Roadhog", role: "Tank" },
+      { name: "Sigma", role: "Tank" },
+      { name: "Winston", role: "Tank" },
+      { name: "Wrecking Ball", role: "Tank" },
+      { name: "Zarya", role: "Tank" },
+
+      // Damage / DPS
+      { name: "Anran", role: "Damage" },
+      { name: "Ashe", role: "Damage" },
+      { name: "Bastion", role: "Damage" },
+      { name: "Cassidy", role: "Damage" },
+      { name: "Echo", role: "Damage" },
+      { name: "Emre", role: "Damage" },
+      { name: "Freja", role: "Damage" },
+      { name: "Genji", role: "Damage" },
+      { name: "Hanzo", role: "Damage" },
+      { name: "Junkrat", role: "Damage" },
+      { name: "Mei", role: "Damage" },
+      { name: "Pharah", role: "Damage" },
+      { name: "Reaper", role: "Damage" },
+      { name: "Shion", role: "Damage" },
+      { name: "Sierra", role: "Damage" },
+      { name: "Sojourn", role: "Damage" },
+      { name: "Soldier: 76", role: "Damage" },
+      { name: "Sombra", role: "Damage" },
+      { name: "Symmetra", role: "Damage" },
+      { name: "Torbjörn", role: "Damage" },
+      { name: "Tracer", role: "Damage" },
+      { name: "Vendetta", role: "Damage" },
+      { name: "Venture", role: "Damage" },
+      { name: "Widowmaker", role: "Damage" },
+
+      // Supports
+      { name: "Ana", role: "Support" },
+      { name: "Baptiste", role: "Support" },
+      { name: "Brigitte", role: "Support" },
+      { name: "Illari", role: "Support" },
+      { name: "Jetpack Cat", role: "Support" },
+      { name: "Juno", role: "Support" },
+      { name: "Kiriko", role: "Support" },
+      { name: "Lifeweaver", role: "Support" },
+      { name: "Lúcio", role: "Support" },
+      { name: "Mercy", role: "Support" },
+      { name: "Mizuki", role: "Support" },
+      { name: "Moira", role: "Support" },
+      { name: "Wuyang", role: "Support" },
+      { name: "Zenyatta", role: "Support" }
+    ];
+
+    const heroName = document.getElementById("heroName");
+    const heroRole = document.getElementById("heroRole");
+    const heroCount = document.getElementById("heroCount");
+    const historyElement = document.getElementById("history");
+    const randomizeButton = document.getElementById("randomizeButton");
+    const clearButton = document.getElementById("clearButton");
+
+    let remainingHeroes = [];
+    let history = [];
+
+    function getSelectedRole() {
+      return document.querySelector('input[name="role"]:checked').value;
+    }
+
+    function getPool() {
+      const selectedRole = getSelectedRole();
+
+      if (selectedRole === "all") {
+        return heroes;
+      }
+
+      return heroes.filter(hero => hero.role === selectedRole);
+    }
+
+    function formatRemainingCount(count) {
+      return `${count} pick${count === 1 ? "" : "s"} remaining in this cycle`;
+    }
+
+    function randomizeHero() {
+      const selectedPool = getPool();
+
+      // Start a new cycle if needed.
+      if (
+        remainingHeroes.length === 0 ||
+        !remainingHeroes.every(hero =>
+          selectedPool.some(poolHero => poolHero.name === hero.name)
+        )
+      ) {
+        remainingHeroes = [...selectedPool];
+      }
+
+      const randomIndex = Math.floor(Math.random() * remainingHeroes.length);
+      const selectedHero = remainingHeroes.splice(randomIndex, 1)[0];
+
+      heroName.textContent = selectedHero.name;
+      heroRole.textContent =
+        selectedHero.role === "Damage"
+          ? "Damage / DPS"
+          : selectedHero.role;
+
+      heroCount.textContent = formatRemainingCount(remainingHeroes.length);
+
+      history.unshift(selectedHero);
+      history = history.slice(0, 12);
+
+      renderHistory();
+    }
+
+    function renderHistory() {
+      historyElement.innerHTML = "";
+
+      if (history.length === 0) {
+        historyElement.innerHTML =
+          '<span class="empty-history">No heroes selected yet.</span>';
+        return;
+      }
+
+      history.forEach(hero => {
+        const item = document.createElement("span");
+        item.className = "history-item";
+        item.textContent = hero.name;
+        item.title =
+          hero.role === "Damage"
+            ? "Damage / DPS"
+            : hero.role;
+
+        historyElement.appendChild(item);
+      });
+    }
+
+    document.querySelectorAll('input[name="role"]').forEach(radio => {
+      radio.addEventListener("change", () => {
+        remainingHeroes = [...getPool()];
+
+        heroCount.textContent =
+          `${remainingHeroes.length} heroes available`;
+      });
+    });
+
+    randomizeButton.addEventListener("click", randomizeHero);
+
+    clearButton.addEventListener("click", () => {
+      history = [];
+
+      // Reset the current cycle to the complete selected pool.
+      remainingHeroes = [...getPool()];
+
+      heroCount.textContent =
+        formatRemainingCount(remainingHeroes.length);
+
+      renderHistory();
+    });
+
+    document.addEventListener("keydown", event => {
+      if (
+        (event.key === "Enter" || event.key === " ") &&
+        document.activeElement.tagName !== "BUTTON"
+      ) {
+        event.preventDefault();
+        randomizeHero();
+      }
+    });
+  </script>
+</body>
+</html>
